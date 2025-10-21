@@ -1019,6 +1019,13 @@ void MainWindow::showDialMarkDialog()
     qDebug() << "打开表盘标注对话框，表盘类型:" << m_currentDialType;
     
     auto dialog = std::make_unique<DialMarkDialog>(this, m_currentDialType);
+    // 如果主窗口维护了 ErrorTableDialog 指针，则注入（但不自动应用数据）
+    // 用户需要在 DialMarkDialog 内部手动选择是否使用误差表格的数据
+    if (m_errorTableDialog) {
+        dialog->setErrorTableDialog(m_errorTableDialog);
+        // 移除自动应用数据的调用，避免在打开对话框时就覆盖默认配置
+        // dialog->applyFinalDataFromErrorTable();
+    }
     dialog->exec();
 }
 
@@ -2365,7 +2372,7 @@ void MainWindow::onMaxAngleCapture()
         return;
     }
     
-    const RoundData &currentRound = m_allRoundsData[m_currentRound];
+    const RoundData &currentRound = m_allRoundsData[m_currentRound]; 
     
     // 检查正行程数据是否已完成
     bool forwardComplete = true;
@@ -2448,7 +2455,7 @@ void MainWindow::onMaxAngleCapture()
         
         // 保存当前角度和角度差，供确定按钮使用
         m_tempMaxAngle = std::abs(rel);
-        m_tempCurrentAngle = currentAngle;
+        m_tempCurrentAngle = currentAngle;        
         m_maxAngleCaptureMode = true;  // 进入最大角度采集模式
         
         // 减少弹窗：只在状态栏显示信息，不弹窗
@@ -3108,7 +3115,6 @@ void MainWindow::updateErrorTableWithAllRounds()
     
     // 使用批量设置方法
     m_errorTableDialog->setMainWindowData(allRoundsForward, allRoundsBackward, allRoundsMaxAngles);
-    
     qDebug() << "所有轮次数据同步完成";
 }
 
